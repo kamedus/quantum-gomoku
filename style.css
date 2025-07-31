@@ -1,0 +1,196 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #282c34; /* モダンな暗い背景 */
+    font-family: 'Share Tech Mono', monospace;
+    color: #e0e0e0; /* 明るいグレー */
+    margin: 0;
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+.game-container {
+    text-align: center;
+    background-color: #3a3f47; /* 少し明るいグレー */
+    padding: 20px; /* Fixed padding */
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 落ち着いた影 */
+    position: relative;
+    box-sizing: border-box;
+    display: flex; /* Use flexbox for internal layout */
+    flex-direction: column; /* Stack children vertically */
+    justify-content: space-between; /* Distribute space */
+    align-items: center; /* Center items horizontally */
+    overflow: hidden; /* Ensure content doesn't overflow the container */
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: #61dafb; /* React Blue */
+    text-shadow: 0 0 8px rgba(97, 218, 251, 0.5);
+    margin-bottom: 20px;
+}
+
+.status-area {
+    font-size: 1.2em;
+    margin-bottom: 15px;
+}
+
+.board {
+    width: calc((var(--board-size) - 1) * var(--cell-size));
+    height: calc((var(--board-size) - 1) * var(--cell-size));
+    background-color: #4a4f59; /* 盤面の色 */
+    border: 2px solid #61dafb; /* ボーダーの色 */
+    box-shadow: 0 0 10px rgba(97, 218, 251, 0.4);
+    position: relative;
+    cursor: pointer;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+
+    /* Grid lines */
+    background-image:
+        repeating-linear-gradient(to right, #61dafb 0, #61dafb 1px, transparent 1px, transparent var(--cell-size)),
+        repeating-linear-gradient(to bottom, #61dafb 0, #61dafb 1px, transparent 1px, transparent var(--cell-size));
+    background-size: var(--cell-size) var(--cell-size);
+    background-position: 0 0; /* Start drawing from the top-left corner */
+}
+
+/* Observed Board Style */
+.board.observed {
+    background-color: #deb887; /* 木目調の背景色 */
+    border: 2px solid #333; /* 黒いボーダー */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    background-image:
+        repeating-linear-gradient(to right, #333 0, #333 1px, transparent 1px, transparent var(--cell-size)),
+        repeating-linear-gradient(to bottom, #333 0, #333 1px, transparent 1px, transparent var(--cell-size));
+}
+
+.cell {
+    display: none;
+}
+
+.stone {
+    width: calc(var(--cell-size) * 0.8); /* Adjust stone size based on cell size */
+    height: calc(var(--cell-size) * 0.8); /* Adjust stone size based on cell size */
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%); /* 交点の中央に配置 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: calc(var(--cell-size) * 0.4); /* テキストサイズ */
+    font-weight: bold;
+    color: #282c34; /* テキスト色 */
+}
+
+/* Stone Probability Styles */
+.stone.p90 {
+    background-color: #333333; /* 真っ黒 */
+    border: 2px solid #61dafb;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    color: white; /* 文字色を白に */
+}
+
+.stone.p90::after {
+    content: '90';
+}
+
+.stone.p70 {
+    background-color: #555555; /* 濃いグレー */
+    border: 2px solid #61dafb;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    color: white; /* 文字色を白に */
+}
+.stone.p70::after {
+    content: '70';
+}
+
+.stone.p10 {
+    background-color: #f0f0f0; /* 真っ白 */
+    border: 2px solid #61dafb;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+.stone.p10::after {
+    content: '10';
+}
+
+.stone.p30 {
+    background-color: #cccccc; /* 少し霞んだ白 */
+    border: 2px solid #61dafb;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+.stone.p30::after {
+    content: '30';
+}
+
+/* Observed Stone Styles */
+.stone.observed.black-final {
+    background-color: #000000; /* 真っ黒 */
+    border: 2px solid #333;
+    box-shadow: none;
+}
+.stone.observed.black-final::after {
+    content: ''; /* テキストを非表示 */
+}
+
+.stone.observed.white-final {
+    background-color: #ffffff; /* 真っ白 */
+    border: 2px solid #333;
+    box-shadow: none;
+}
+.stone.observed.white-final::after {
+    content: ''; /* テキストを非表示 */
+}
+
+.controls button {
+    background-color: #61dafb; /* React Blue */
+    color: #282c34;
+    border: 1px solid #61dafb;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1em;
+    box-shadow: 0 0 8px rgba(97, 218, 251, 0.4);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.controls button:hover {
+    background-color: #50b8e6;
+    box-shadow: 0 0 12px rgba(97, 218, 251, 0.7);
+}
+
+.game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(40, 44, 52, 0.9); /* モダンな暗い背景の半透明 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.game-over-content {
+    background-color: #3a3f47;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    color: #61dafb;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.game-over-content p {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.game-over-content button {
+    font-size: 1.5em;
+}
+
+.hidden {
+    display: none;
+}
