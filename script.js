@@ -13,10 +13,10 @@ const WHITE = 2;
 
 // 石の確率定義
 const STONE_TYPES = {
-    BLACK_90: { value: 90, color: BLACK }, // 先手
-    BLACK_70: { value: 70, color: BLACK }, // 先手
-    WHITE_10: { value: 10, color: WHITE }, // 後手
-    WHITE_30: { value: 30, color: WHITE }  // 後手
+    BLACK_90: { id: 'p90', value: 90, color: BLACK }, // 先手
+    BLACK_70: { id: 'p70', value: 70, color: BLACK }, // 先手
+    WHITE_10: { id: 'p10', value: 10, color: WHITE }, // 後手
+    WHITE_30: { id: 'p30', value: 30, color: WHITE }  // 後手
 };
 
 let board = [];
@@ -89,11 +89,8 @@ function renderBoard() {
                     stone.classList.add('observed', board[r][c] === BLACK ? 'black-final' : 'white-final');
                 } else {
                     // 確率石のクラスを追加
-                    const stoneType = board[r][c]; // board[r][c]にはSTONE_TYPESの値が入る
-                    if (stoneType === STONE_TYPES.BLACK_90) stone.classList.add('p90');
-                    else if (stoneType === STONE_TYPES.BLACK_70) stone.classList.add('p70');
-                    else if (stoneType === STONE_TYPES.WHITE_10) stone.classList.add('p10');
-                    else if (stoneType === STONE_TYPES.WHITE_30) stone.classList.add('p30');
+                    const stoneId = board[r][c]; // board[r][c]にはSTONE_TYPESのidが入る
+                    stone.classList.add(stoneId);
                 }
                 
                 stone.style.left = `${c * CELL_SIZE}px`;
@@ -134,7 +131,7 @@ function handleBoardClick(event) {
             stoneType = (playerMoveCount % 2 === 0) ? STONE_TYPES.WHITE_10 : STONE_TYPES.WHITE_30;
         }
         
-        board[row][col] = stoneType; // 盤面に石の種類を記録
+        board[row][col] = stoneType.id; // 盤面に石の種類IDを記録
         lastPlacedStone = { row, col, type: stoneType }; // 最後に置かれた石を保存
 
         turnCount++;
@@ -160,16 +157,19 @@ function observeBoard() {
     // 全ての石を確率に基づいて確定させる
     for (let r = 0; r < BOARD_SIZE; r++) {
         for (let c = 0; c < BOARD_SIZE; c++) {
-            const stoneType = board[r][c];
-            if (stoneType !== EMPTY) {
+            const stoneId = board[r][c];
+            if (stoneId !== EMPTY) {
+                const stoneType = Object.values(STONE_TYPES).find(type => type.id === stoneId);
+                if (!stoneType) continue; // 見つからない場合はスキップ
+
                 const rand = Math.random() * 100; // 0-99
-                if (stoneType === STONE_TYPES.BLACK_90) {
+                if (stoneType.id === STONE_TYPES.BLACK_90.id) {
                     board[r][c] = (rand < 90) ? BLACK : WHITE;
-                } else if (stoneType === STONE_TYPES.BLACK_70) {
+                } else if (stoneType.id === STONE_TYPES.BLACK_70.id) {
                     board[r][c] = (rand < 70) ? BLACK : WHITE;
-                } else if (stoneType === STONE_TYPES.WHITE_10) {
+                } else if (stoneType.id === STONE_TYPES.WHITE_10.id) {
                     board[r][c] = (rand < 10) ? BLACK : WHITE;
-                } else if (stoneType === STONE_TYPES.WHITE_30) {
+                } else if (stoneType.id === STONE_TYPES.WHITE_30.id) {
                     board[r][c] = (rand < 30) ? BLACK : WHITE;
                 }
             }
