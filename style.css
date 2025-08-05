@@ -160,31 +160,41 @@ h1 {
     box-shadow: 0 0 12px rgba(97, 218, 251, 0.7);
 }
 
+.controls button:disabled {
+    background-color: #666666;
+    color: #999999;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 .game-over-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(40, 44, 52, 0.9); /* モダンな暗い背景の半透明 */
+    background-color: rgba(40, 44, 52, 0.7); /* より透明度を上げて盤面を見やすく */
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* 上部に配置 */
+    padding-top: 50px; /* 上部余白を追加 */
     z-index: 100;
 }
 
 .game-over-content {
-    background-color: #3a3f47;
-    padding: 30px;
+    background-color: rgba(58, 63, 71, 0.95); /* 半透明にして背景が透ける */
+    padding: 20px 30px; /* 縦の余白を少し減らす */
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     color: #61dafb;
     font-family: 'Orbitron', sans-serif;
+    border: 2px solid #61dafb; /* ボーダーを追加して目立たせる */
 }
 
 .game-over-content p {
-    font-size: 2em;
-    margin-bottom: 20px;
+    font-size: 1.8em; /* フォントサイズを少し小さく */
+    margin-bottom: 15px; /* 余白を少し減らす */
+    margin-top: 0; /* 上部余白を削除 */
 }
 
 .game-over-content button {

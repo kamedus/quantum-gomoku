@@ -27,6 +27,7 @@ let turnCount; // 手番を数える
 let lastPlacedStone = null; // 最後に置かれた石の座標と種類を保存
 let isObservedState = false; // 観測状態かどうか
 let originalBoardState = []; // 観測前の盤面状態を保存
+let canObserve = true; // 観測が可能かどうか（戻った後は新しい手を打つまで不可）
 
 // --- ゲーム初期化 --- //
 function initGame() {
@@ -36,11 +37,13 @@ function initGame() {
     resetButton.classList.remove('hidden');
     observeButton.classList.remove('hidden'); // 観測ボタンは常に表示
     observeButton.textContent = '観測'; // ボタンのテキストを初期化
+    observeButton.disabled = false; // ボタンを有効化
     currentTurn = BLACK; // 黒から開始
     turnCount = 0; // 手番をリセット
     updateTurnDisplay();
     isObservedState = false;
     originalBoardState = [];
+    canObserve = true; // 初期化時は観測可能
 
     // Calculate CELL_SIZE dynamically based on the smaller of viewport width or height
     // This ensures the board always fits within the screen
@@ -136,6 +139,8 @@ function handleBoardClick(event) {
 
         turnCount++;
         currentTurn = (currentTurn === BLACK) ? WHITE : BLACK; // ターンを交代
+        canObserve = true; // 新しい手を打ったので観測可能にする
+        observeButton.disabled = false; // 観測ボタンを有効化
         updateTurnDisplay();
         renderBoard(); // 石を置いた後、盤面を再描画
     }
@@ -149,7 +154,7 @@ function placeStone(row, col, color) {
 
 // --- 観測処理 --- //
 function observeBoard() {
-    if (gameOver || isObservedState) return; // ゲーム終了後または既に観測状態なら何もしない
+    if (gameOver || isObservedState || !canObserve) return; // ゲーム終了後、既に観測状態、または観測不可なら何もしない
 
     // 観測前の盤面状態を保存（観測ボタンを押した時点の盤面）
     originalBoardState = JSON.parse(JSON.stringify(board));
@@ -177,31 +182,36 @@ function observeBoard() {
     }
     isObservedState = true;
     renderBoard(); // 確定した盤面を再描画
-    observeButton.textContent = '戻る'; // ボタンのテキストを「戻る」に変更
 
-    // 3秒後に勝利判定
-    setTimeout(() => {
-        const blackWins = checkWin(null, null, BLACK); // 黒の勝利判定
-        const whiteWins = checkWin(null, null, WHITE); // 白の勝利判定
+    // 即座に勝利判定を行う
+    const blackWins = checkWin(null, null, BLACK); // 黒の勝利判定
+    const whiteWins = checkWin(null, null, WHITE); // 白の勝利判定
 
-        if (blackWins && whiteWins) {
-            // 観測を宣言したプレイヤーの勝利
-            // 最後に石を置いたプレイヤーが観測を宣言したとみなす
-            const winnerColor = (lastPlacedStone.type.color === BLACK) ? BLACK : WHITE; // 最後に置いた石の色
-            endGame(winnerColor);
+    if (blackWins || whiteWins) {
+        // 勝利が確定している場合は戻るボタンを無効化
+        observeButton.disabled = true;
+        observeButton.textContent = '判定中...';
+        
+        // 3秒後に勝利確定処理
+        setTimeout(() => {
+            if (blackWins && whiteWins) {
+                // 観測を宣言したプレイヤーの勝利
+                // 最後に石を置いたプレイヤーが観測を宣言したとみなす
+                const winnerColor = (lastPlacedStone.type.color === BLACK) ? BLACK : WHITE; // 最後に置いた石の色
+                endGame(winnerColor);
+            } else if (blackWins) {
+                endGame(BLACK);
+            } else if (whiteWins) {
+                endGame(WHITE);
+            }
             // 勝利確定時は「戻る」ボタンを非表示にし、「最初へ戻る」ボタンのみ表示
             observeButton.classList.add('hidden');
-        } else if (blackWins) {
-            endGame(BLACK);
-            observeButton.classList.add('hidden');
-        } else if (whiteWins) {
-            endGame(WHITE);
-            observeButton.classList.add('hidden');
-        } else {
-            // どちらも勝利条件を満たさなかった場合
-            // 何もしない（「戻る」ボタンで観測前の状態に戻る）
-        }
-    }, 3000);
+        }, 3000);
+    } else {
+        // どちらも勝利条件を満たさなかった場合
+        observeButton.textContent = '戻る'; // ボタンのテキストを「戻る」に変更
+        observeButton.disabled = false; // ボタンを有効にする
+    }
 }
 
 // --- 観測前の状態に戻す処理 --- //
@@ -210,8 +220,10 @@ function revertToPreObservation() {
 
     board = JSON.parse(JSON.stringify(originalBoardState)); // 観測前の盤面に戻す
     isObservedState = false;
+    canObserve = false; // 戻った後は新しい手を打つまで観測不可
     renderBoard(); // 観測前の盤面を再描画
     observeButton.textContent = '観測'; // ボタンのテキストを「観測」に戻す
+    observeButton.disabled = true; // 観測ボタンを無効化
     gameOverOverlay.classList.add('hidden'); // ゲームオーバー表示を隠す
 }
 
@@ -279,6 +291,8 @@ restartButton.addEventListener('click', () => {
 
 // 観測ボタンのイベントリスナー
 observeButton.addEventListener('click', () => {
+    if (observeButton.disabled) return; // ボタンが無効化されている場合は何もしない
+    
     if (isObservedState) {
         revertToPreObservation();
     } else {
